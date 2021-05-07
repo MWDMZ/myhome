@@ -1,0 +1,54 @@
+import json
+
+
+def parseLogRow(src):
+    dictRow = json.loads(src)
+    print(type(dictRow))
+    content = dictRow["content"]
+    listContent = content.split(",|")
+
+    dict = {}
+    for item in listContent:
+        if str(item).startswith("userId:"):
+            dict["userid"] = item[7:]
+        elif str(item).startswith("orderId:"):
+            dict["orderId"] = item[8:]
+        elif str(item).startswith("prepayH5Parameter:"):
+            item = item[18:]
+            listParam = item.split("&")
+            for p in listParam:
+                if(str(p).startswith("goodsId")):
+                    dict["goodsId"] = p[8:]
+                elif str(p).startswith("firstShareUId"):
+                    dict["firstShareUId"] =  p[14:]
+    if "userid" not in dict.keys():
+        dict["userid"]=""
+    if "orderId" not in dict.keys():
+        dict["orderId"] = ""
+    if "goodsId" not in dict.keys():
+        dict["goodsId"] = ""
+    if "firstShareUId" not in dict.keys():
+        dict["firstShareUId"] = ""
+
+    result = dict["userid"]+","+dict["orderId"]+","+dict["goodsId"]+","+dict["firstShareUId"]
+    return result
+
+
+fileName = "data_20210503_141533.txt"
+fileLog = "data_log0503.csv"
+fr = open(fileName,encoding='utf-8',mode='r')
+
+with open(fileLog,'w+',encoding='gbk') as f:
+    f.write("userid,orderId,goodsId,firstShareUId\n")
+    line = fr.readline()
+    count = 0
+    while line:
+        count = count + 1
+        if(count%1000==0):
+            print("count:",count)
+        csvRow = parseLogRow(line)
+        f.write(csvRow+"\n")
+        line = fr.readline()
+    fr.close()
+
+
